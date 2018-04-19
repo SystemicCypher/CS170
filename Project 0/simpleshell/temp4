@@ -1,0 +1,33 @@
+1c1,30
+<  30 131 783
+---
+> .
+> ..
+> d 1972 Apr 18 21:46 simple_shell.c
+> Makefile
+> -rw-r--r-- 1 zzeng ugrad  111 Apr 18 21:04 testfile3
+> -rw-r--r-- 1 zzeng ugrad  123 Apr 18 21:23 test
+> -rw-r--r-- 1 zzeng ugrad  123 Apr 18 21:23 test1
+> -rw-r--r-- 1 zzeng ugrad  127 Apr 18 21:04 testfile2
+> -rw-r--r-- 1 zzeng ugrad   12 Apr 18 21:46 temp2
+> -rw-r--r-- 1 zzeng ugrad  154 Apr 18 21:04 testfile4
+> -rw-r--r-- 1 zzeng ugrad 3184 Apr 18 21:46 simple_shell.o
+> -rw-r--r-- 1 zzeng ugrad   49 Apr 18 21:04 testfile1
+> -rw-r--r-- 1 zzeng ugrad   61 Apr 18 21:04 testfile
+> -rw-r--r-- 1 zzeng ugrad  783 Apr 18 21:46 temp
+> -rw-r--r-- 1 zzeng ugrad  783 Apr 18 21:46 temp3
+> -rw-r--r-- 1 zzeng ugrad  868 Apr 18 21:46 temp4
+> simple
+> simple_shell.c
+> simple_shell.o
+> temp
+> temp2
+> temp3
+> temp4
+> test
+> test1
+> testfile
+> testfile1
+> testfile2
+> testfile3
+> testfile4
