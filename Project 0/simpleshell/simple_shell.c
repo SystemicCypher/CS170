@@ -28,17 +28,26 @@ void runcommandwithpipe(char* command1, char* command2, char** args1, char** arg
   pid_t pid = fork();
 
   if(pid) { // parent
+    waitpid(pid, NULL, 0);
     dup2(pfd[0], 0);
     close(pfd[1]);
     runcommand(command2, args2);
   } else { //child
     dup2(pfd[1], 1);
     close(pfd[0]);
-    execvp(command1, args1);
+    runcommand(command1, args1);
+    exit(0);
   }
 }
 
 void runcommand(char* command, char** args) {
+  /*printf("Command: %s\n", command);
+  printf("Args: ");
+  for(int i = 0; args[i] != 0; i++) {
+    printf("%s ", args[i]);
+  }
+  printf("\n");*/
+
   int flag = 0;
   int first = 0;
 
@@ -68,14 +77,26 @@ void runcommand(char* command, char** args) {
   if(flag) {
     int pipefd[2];
     pipe(pipefd);
-    pid_t pipeid = fork();
+    /*pid_t pipeid = fork();
     if(pipeid) { // parent
       waitpid(pipeid, NULL, 0);
     }
     else { // child
-      runcommandwithpipe(command1, command2, args1, args2, pipefd);
-      exit(0);
-    }
+      printf("Command1: %s\n", command1);
+      printf("Args1: ");
+      for(int i = 0; args1[i] != 0; i++) {
+        printf("%s ", args1[i]);
+      }
+      printf("\n");
+      printf("Command2: %s\n", command2);
+      printf("Args2: ");
+      for(int i = 0; args2[i] != 0; i++) {
+        printf("%s ", args2[i]);
+      }
+      printf("\n");*/
+    runcommandwithpipe(command1, command2, args1, args2, pipefd);
+      //exit(0);
+    //}
   }
   else {
     pid_t pid = fork();
