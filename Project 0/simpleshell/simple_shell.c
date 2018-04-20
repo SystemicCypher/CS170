@@ -4,6 +4,7 @@
 #include <sys/wait.h>
 #include <stdlib.h>
 #include <fcntl.h>
+#include <signal.h>
 
 #define MAX_TOKEN_LENGTH 50
 #define MAX_TOKEN_COUNT 100
@@ -30,11 +31,13 @@ void runcommandwithpipe(char* command1, char* command2, char** args1, char** arg
   if(pid) { // parent
     waitpid(pid, NULL, 0);
     dup2(pfd[0], 0);
+    close(pfd[0]);
     close(pfd[1]);
     runcommand(command2, args2);
   } else { //child
     dup2(pfd[1], 1);
     close(pfd[0]);
+    close(pfd[1]);
     runcommand(command1, args1);
     exit(0);
   }
@@ -117,7 +120,17 @@ void runcommand(char* command, char** args) {
   }
 }
 
+void handler(int sig) {
+  static int count = 0;
+  printf("Enter CTRL-Z again to exit\n");
+  count++;
+  if(count == 1)
+    signal(SIGTSTP, SIG_DFL);
+}
+
 int main(){
+  signal(SIGTSTP, handler);
+
   char line[MAX_LINE_LENGTH];
   //printf("shell: ");
   while(fgets(line, MAX_LINE_LENGTH, stdin)) {
