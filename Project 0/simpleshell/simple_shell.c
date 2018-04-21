@@ -62,10 +62,14 @@ void runcommandwithpipe(char* command1, char* command2, char** args1, char** arg
 }
 
 void runcommand(char* command, char** args) {
-  // Flag - 0 no pipe
-  //      - 1 pipe
+  // Flag - 0 no pipe found
+  //      - 1 pipe found
   int flag = 0;
-  // First - 0 
+
+  // This flag is used to separate the first command
+  // from the rest of the commands in the arguments list
+  // First - 0 this is not the first pipe found
+  //       - 1 this pipe found is the first pipe
   int first = 0;
 
   // Set variables to default values
