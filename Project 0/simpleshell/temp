@@ -1,0 +1,23 @@
+
+
+
+
+
+
+
+
+
+	$(CC)  $(CFLAGS) -c $<
+	$(CC) -o $@ $^ $(LDFLAGS)
+	./simple
+	./simple < testfile
+	rm simple simple_shell.o
+.c.o:
+CC      = gcc
+CFLAGS  = -O
+LDFLAGS  = -O 
+all: simple 
+clean:
+run: 
+simple:  simple_shell.o
+test: 
