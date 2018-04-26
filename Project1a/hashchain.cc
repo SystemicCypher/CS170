@@ -39,11 +39,15 @@
 #else //else use synchronization
 #ifdef RWLOCK //rwlock
 #ifdef FINEGRAIN //fine rwlock
-#define START_READ() do{}while(0) //TODO
-#define END_READ() do{}while(0) //TODO
-#define START_WRITE() do{}while(0) //TODO
-#define END_WRITE() do{}while(0) //TODO
-#define SYNC_INIT //TODO
+#define START_READ() rwlocks[hash].startRead();
+#define END_READ()  rwlocks[hash].doneRead();
+#define START_WRITE() rwlocks[hash].startWrite();
+#define END_WRITE() rwlocks[hash].doneWrite();
+#define SYNC_INIT \
+  locks = new rwlocks[TABLE_SIZE]; \
+  for (int i = 0; i < TABLE_SIZE; i++) { \
+    rwlocks[i].RWLock();		 \
+  }
 #define SYNC_DESTROY //TODO
 #else //coarse rwlock
 #define START_READ() rwlock.startRead();
