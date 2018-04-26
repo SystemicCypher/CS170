@@ -1,4 +1,4 @@
-#include<stdio.h>
+#include <stdio.h>
 #include <pthread.h>
 #include <iostream> //
 
@@ -25,6 +25,11 @@ void RWLock::startRead() {
   AR++;
   pthread_mutex_unlock(&lock);
 }
-void RWLock::doneRead() { }
+
+void RWLock::doneRead() {
+    pthread_mutex_lock(&lock);
+    
+}
+
 void RWLock::startWrite() { }
 void RWLock::doneWrite() { }

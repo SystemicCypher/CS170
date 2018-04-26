@@ -4,9 +4,15 @@
 
 class RWLock{
 private:
+<<<<<<< Updated upstream
   int AR, WR, AW, WW;
   pthread_cond_t okToRead, okToWrite;
   pthread_mutex_t lock;
+=======
+    int AR, WR, AW, WW;
+    pthread_cond_t okToRead, okToWrite;
+    pthread_mutex_t lock;
+>>>>>>> Stashed changes
 public:
     RWLock();
     ~RWLock();
