@@ -46,11 +46,11 @@
 #define SYNC_INIT //TODO
 #define SYNC_DESTROY //TODO
 #else //coarse rwlock
-#define START_READ() do{}while(0) //TODO
-#define END_READ() do{}while(0) //TODO
-#define START_WRITE() do{}while(0) //TODO
-#define END_WRITE() do{}while(0) //TODO
-#define SYNC_INIT //TODO
+#define START_READ() rwlock.startRead();
+#define END_READ() rwlock.doneRead();
+#define START_WRITE() rwlock.startWrite();
+#define END_WRITE() rwlock.doneWrite();
+#define SYNC_INIT rwlock.RWLock();
 #define SYNC_DESTROY //TODO
 #endif
 #else //mutex
