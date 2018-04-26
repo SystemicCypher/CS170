@@ -31,5 +31,15 @@ void RWLock::doneRead() {
     
 }
 
-void RWLock::startWrite() { }
+void RWLock::startWrite() {
+  pthread_mutex_lock(&lock);
+  while ((AW + WR) > 0) {
+    WW++;
+    okToWrite.wait(&lock);
+    WW--;
+  }
+  AW++;
+  pthread_mutex_unlock(&lock);
+
+}
 void RWLock::doneWrite() { }
