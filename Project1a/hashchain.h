@@ -32,8 +32,10 @@ private:
 #ifdef RWLOCK //rwlock
 #ifdef FINEGRAIN //fine rwlock
       //TODO:insert code for fine-grained RWLock here
+      RWLock *rwlocks;
 #else //coarse rwlock
       //TODO:insert code for coarse-grained RWLock here
+      RWLock rwlock;
 #endif
 #else //mutex
 #ifdef FINEGRAIN //fine mutex

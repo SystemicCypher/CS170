@@ -19,7 +19,7 @@ void RWLock::startRead() {
   pthread_mutex_lock(&lock);
   while ((AW + WW) > 0) {
     WR++;
-    okToRead.wait(&lock);
+    pthread_cond_wait(&okToRead, &lock);
     WR--;
   }
   AR++;
@@ -39,7 +39,7 @@ void RWLock::startWrite() {
   pthread_mutex_lock(&lock);
   while ((AW + WR) > 0) {
     WW++;
-    okToWrite.pthread_cond_wait(&lock);
+    pthread_cond_wait(&okToWrite, &lock);
     WW--;
   }
   AW++;
