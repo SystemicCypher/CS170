@@ -37,7 +37,7 @@ void RWLock::doneRead() {
 
 void RWLock::startWrite() {
   pthread_mutex_lock(&lock);
-  while ((AW + WR) > 0) {
+  while ((AW + AR) > 0) {
     WW++;
     pthread_cond_wait(&okToWrite, &lock);
     WW--;
