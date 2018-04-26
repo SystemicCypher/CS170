@@ -48,7 +48,7 @@
   for (int i = 0; i < TABLE_SIZE; i++) { \
     rwlocks[i].RWLock();		 \
   }
-#define SYNC_DESTROY //TODO
+#define SYNC_DESTROY delete [] rwlocks;
 #else //coarse rwlock
 #define START_READ() rwlock.startRead();
 #define END_READ() rwlock.doneRead();
