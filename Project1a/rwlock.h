@@ -4,7 +4,9 @@
 
 class RWLock{
 private:
-
+  int AR, WR, AW, WW;
+  pthread_cond_t okToRead, okToWrite;
+  pthread_mutex_t lock;
 public:
     RWLock();
     ~RWLock();
