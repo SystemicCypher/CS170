@@ -28,7 +28,11 @@ void RWLock::startRead() {
 
 void RWLock::doneRead() {
     pthread_mutex_lock(&lock);
-    
+    AR--;
+    if (AR == 0 && WW > 0){
+        okToWrite.signal();
+    }
+    pthread_mutex_unlock(&lock);
 }
 
 void RWLock::startWrite() {
