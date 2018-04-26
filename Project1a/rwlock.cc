@@ -30,7 +30,7 @@ void RWLock::doneRead() {
     pthread_mutex_lock(&lock);
     AR--;
     if (AR == 0 && WW > 0){
-        okToWrite.signal();
+        pthread_cond_signal(&okToWrite);
     }
     pthread_mutex_unlock(&lock);
 }
@@ -39,7 +39,7 @@ void RWLock::startWrite() {
   pthread_mutex_lock(&lock);
   while ((AW + WR) > 0) {
     WW++;
-    okToWrite.wait(&lock);
+    okToWrite.pthread_cond_wait(&lock);
     WW--;
   }
   AW++;
@@ -50,10 +50,10 @@ void RWLock::doneWrite() {
     pthread_mutex_lock(&lock);
     AW--;
     if (WW > 0){
-        okToWrite.signal();
+        pthread_cond_signal(&okToWrite);
     }
     else if (WR > 0){
-        okToRead.broadcast();
+        pthread_cond_broadcast(&okToRead);
     }
     pthread_mutex_unlock(&lock);
  }
