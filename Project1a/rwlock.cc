@@ -46,4 +46,14 @@ void RWLock::startWrite() {
   pthread_mutex_unlock(&lock);
 
 }
-void RWLock::doneWrite() { }
+void RWLock::doneWrite() {
+    pthread_mutex_lock(&lock);
+    AW--;
+    if (WW > 0){
+        okToWrite.signal();
+    }
+    else if (WR > 0){
+        okToRead.broadcast();
+    }
+    pthread_mutex_unlock(&lock);
+ }
