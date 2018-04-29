@@ -29,7 +29,7 @@ class HashMap {
 private:
       LinkedHashEntry **table;
 #ifndef NOLOCK
-#ifdef RWLOCK //rwlock
+#ifdef P1_RWLOCK //rwlock
 #ifdef FINEGRAIN //fine rwlock
       //TODO:insert code for fine-grained RWLock here
       RWLock *rwlocks;
