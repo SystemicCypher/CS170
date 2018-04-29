@@ -37,7 +37,7 @@
 #define SYNCH_INIT
 #define SYNCH_DESTROY
 #else //else use synchronization
-#ifdef RWLOCK //rwlock
+#ifdef P1_RWLOCK //rwlock
 #ifdef FINEGRAIN //fine rwlock
 #define START_READ() rwlocks[hash].startRead();
 #define END_READ()  rwlocks[hash].doneRead();
