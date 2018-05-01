@@ -10,6 +10,7 @@
 #include <iostream>
 #include <unistd.h>
 #include "hashchain.h"
+#include "rwlock.h"
 
 //NOYIELD disables the yields used to help uncover synchronization bugs
 //  - the yields are useful for uncovering bugs (and MUST be left in for the actual submission), but performance testing may be easier without them
@@ -44,17 +45,17 @@
 #define START_WRITE() rwlocks[hash].startWrite();
 #define END_WRITE() rwlocks[hash].doneWrite();
 #define SYNC_INIT \
-  locks = new rwlocks[TABLE_SIZE]; \
-  for (int i = 0; i < TABLE_SIZE; i++) { \
-    rwlocks[i].RWLock();		 \
-  }
+  rwlocks = new RWLock[TABLE_SIZE];	\
+  for (int i = 0; i < TABLE_SIZE; i++) {  \
+    RWLock rwlocks[i];      \
+  }      
 #define SYNC_DESTROY delete [] rwlocks;
 #else //coarse rwlock
 #define START_READ() rwlock.startRead();
 #define END_READ() rwlock.doneRead();
 #define START_WRITE() rwlock.startWrite();
 #define END_WRITE() rwlock.doneWrite();
-#define SYNC_INIT rwlock.RWLock();
+#define SYNC_INIT RWLock rwlock;
 #define SYNC_DESTROY //TODO
 #endif
 #else //mutex
