@@ -27,7 +27,7 @@ class HashMap {
 private:
       LinkedHashEntry **table;
 #ifdef P1_SEMAPHORE
-      //semaphore based code here
+      Semaphore* sema;
 #elif defined P1_LOCK
       //lock based code here
 #elif  defined P1_RWLOCK
