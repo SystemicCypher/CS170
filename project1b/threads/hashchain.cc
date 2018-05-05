@@ -48,10 +48,10 @@
 #define START_WRITE() do{}while(0) //TODO
 #define END_WRITE() do{}while(0) //TODO
 #elif defined P1_RWLOCK //using our rwlock
-#define START_READ() do{}while(0) //TODO
-#define END_READ() do{}while(0) //TODO
-#define START_WRITE() do{}while(0) //TODO
-#define END_WRITE() do{}while(0) //TODO
+#define START_READ() rwlocks[hash].startRead();
+#define END_READ() rwlocks[hash].doneRead();
+#define START_WRITE() rwlocks[hash].startWrite();
+#define END_WRITE() rwlocks[hash].doneWrite();
 #else //else behave like NOLOCK (no option passed)
 #define START_READ() do{}while(0)
 #define END_READ() do{}while(0)
@@ -101,7 +101,10 @@ HashMap::HashMap() {
 #elif defined P1_LOCK
   //insert setup code here
 #elif defined P1_RWLOCK
-  //insert setup code here
+  rwlocks = new RWLock[TABLE_SIZE];
+  for(int i = 0; i < TABLE_SIZE; i++) {
+    RWLock rwlocks[i];
+  }
 #endif
 }
 
