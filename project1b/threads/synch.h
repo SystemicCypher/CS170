@@ -141,6 +141,7 @@ public:
 private:
     char* name;
     // plus some other stuff you'll need to define
+    Lock *lock;
     List *queue;       // threads waiting for on this condition var
 };
 #endif // SYNCH_H

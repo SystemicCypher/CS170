@@ -448,12 +448,12 @@ hashchain.o: ../threads/hashchain.cc /usr/include/stdc-predef.h \
  /usr/include/bits/select.h /usr/include/bits/types/sigset_t.h \
  /usr/include/bits/types/__sigset_t.h /usr/include/sys/sysmacros.h \
  /usr/include/bits/sysmacros.h /usr/include/bits/semaphore.h \
- ../threads/synch.h ../threads/copyright.h ../threads/thread.h \
- ../threads/utility.h ../threads/bool.h ../machine/sysdep.h \
- ../threads/copyright.h /usr/include/stdio.h /usr/include/libio.h \
- /usr/include/_G_config.h /usr/include/bits/stdio_lim.h \
- /usr/include/bits/sys_errlist.h /usr/include/string.h \
- /usr/include/strings.h ../threads/list.h ../threads/hashchain.h \
+ ../threads/hashchain.h ../threads/synch.h ../threads/copyright.h \
+ ../threads/thread.h ../threads/utility.h ../threads/bool.h \
+ ../machine/sysdep.h ../threads/copyright.h /usr/include/stdio.h \
+ /usr/include/libio.h /usr/include/_G_config.h \
+ /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h \
+ /usr/include/string.h /usr/include/strings.h ../threads/list.h \
  ../threads/system.h ../threads/scheduler.h ../machine/interrupt.h \
  ../threads/list.h ../machine/stats.h ../machine/timer.h \
  ../threads/utility.h
@@ -469,6 +469,19 @@ rwlock.o: ../threads/rwlock.cc /usr/include/stdc-predef.h \
  /usr/include/bits/types/__mbstate_t.h \
  /usr/lib/gcc/x86_64-redhat-linux/7/include/stdarg.h \
  /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h \
+ /usr/include/pthread.h /usr/include/endian.h /usr/include/bits/endian.h \
+ /usr/include/bits/byteswap.h /usr/include/bits/byteswap-16.h \
+ /usr/include/bits/uintn-identity.h /usr/include/sched.h \
+ /usr/include/bits/types/time_t.h \
+ /usr/include/bits/types/struct_timespec.h /usr/include/bits/sched.h \
+ /usr/include/bits/cpu-set.h /usr/include/time.h /usr/include/bits/time.h \
+ /usr/include/bits/timex.h /usr/include/bits/types/struct_timeval.h \
+ /usr/include/bits/types/clock_t.h /usr/include/bits/types/struct_tm.h \
+ /usr/include/bits/types/clockid_t.h /usr/include/bits/types/timer_t.h \
+ /usr/include/bits/types/struct_itimerspec.h \
+ /usr/include/bits/types/locale_t.h /usr/include/bits/types/__locale_t.h \
+ /usr/include/bits/pthreadtypes.h /usr/include/bits/thread-shared-types.h \
+ /usr/include/bits/pthreadtypes-arch.h /usr/include/bits/setjmp.h \
  /usr/include/c++/7/iostream \
  /usr/include/c++/7/x86_64-redhat-linux/32/bits/c++config.h \
  /usr/include/c++/7/x86_64-redhat-linux/32/bits/os_defines.h \
@@ -479,7 +492,6 @@ rwlock.o: ../threads/rwlock.cc /usr/include/stdc-predef.h \
  /usr/include/c++/7/cwchar /usr/include/wchar.h \
  /usr/include/bits/floatn.h /usr/include/bits/wchar.h \
  /usr/include/bits/types/wint_t.h /usr/include/bits/types/mbstate_t.h \
- /usr/include/bits/types/locale_t.h /usr/include/bits/types/__locale_t.h \
  /usr/include/c++/7/exception /usr/include/c++/7/bits/exception.h \
  /usr/include/c++/7/bits/char_traits.h \
  /usr/include/c++/7/bits/stl_algobase.h \
@@ -500,22 +512,10 @@ rwlock.o: ../threads/rwlock.cc /usr/include/stdc-predef.h \
  /usr/include/c++/7/x86_64-redhat-linux/32/bits/c++locale.h \
  /usr/include/c++/7/clocale /usr/include/locale.h \
  /usr/include/bits/locale.h /usr/include/c++/7/cctype \
- /usr/include/ctype.h /usr/include/endian.h /usr/include/bits/endian.h \
- /usr/include/bits/byteswap.h /usr/include/bits/byteswap-16.h \
- /usr/include/bits/uintn-identity.h /usr/include/c++/7/bits/ios_base.h \
+ /usr/include/ctype.h /usr/include/c++/7/bits/ios_base.h \
  /usr/include/c++/7/ext/atomicity.h \
  /usr/include/c++/7/x86_64-redhat-linux/32/bits/gthr.h \
  /usr/include/c++/7/x86_64-redhat-linux/32/bits/gthr-default.h \
- /usr/include/pthread.h /usr/include/sched.h \
- /usr/include/bits/types/time_t.h \
- /usr/include/bits/types/struct_timespec.h /usr/include/bits/sched.h \
- /usr/include/bits/cpu-set.h /usr/include/time.h /usr/include/bits/time.h \
- /usr/include/bits/timex.h /usr/include/bits/types/struct_timeval.h \
- /usr/include/bits/types/clock_t.h /usr/include/bits/types/struct_tm.h \
- /usr/include/bits/types/clockid_t.h /usr/include/bits/types/timer_t.h \
- /usr/include/bits/types/struct_itimerspec.h \
- /usr/include/bits/pthreadtypes.h /usr/include/bits/thread-shared-types.h \
- /usr/include/bits/pthreadtypes-arch.h /usr/include/bits/setjmp.h \
  /usr/include/c++/7/x86_64-redhat-linux/32/bits/atomic_word.h \
  /usr/include/c++/7/bits/locale_classes.h /usr/include/c++/7/string \
  /usr/include/c++/7/bits/allocator.h \
@@ -545,8 +545,4 @@ rwlock.o: ../threads/rwlock.cc /usr/include/stdc-predef.h \
  /usr/include/bits/stdint-intn.h /usr/include/sys/select.h \
  /usr/include/bits/select.h /usr/include/bits/types/sigset_t.h \
  /usr/include/bits/types/__sigset_t.h /usr/include/sys/sysmacros.h \
- /usr/include/bits/sysmacros.h /usr/include/bits/semaphore.h \
- ../threads/synch.h ../threads/copyright.h ../threads/thread.h \
- ../threads/utility.h ../threads/bool.h ../machine/sysdep.h \
- ../threads/copyright.h /usr/include/string.h /usr/include/strings.h \
- ../threads/list.h
+ /usr/include/bits/sysmacros.h /usr/include/bits/semaphore.h

@@ -155,8 +155,65 @@ bool Lock::isHeldByCurrentThread() {
   return 0;
 }
 
-Condition::Condition(char* debugName) { }
-Condition::~Condition() { }
-void Condition::Wait(Lock* conditionLock) { }
-void Condition::Signal(Lock* conditionLock) { }
-void Condition::Broadcast(Lock* conditionLock) { }
+Condition::Condition(char* debugName) {
+  name = debugName;
+  lock = NULL;
+  queue = new List;
+}
+Condition::~Condition() {
+  delete queue;
+}
+void Condition::Wait(Lock* conditionLock) {
+  IntStatus oldLevel = interrupt->SetLevel(IntOff);
+
+  if (conditionLock == NULL) {
+    printf("Bad Lock. Given lock is NULL.");
+    (void) interrupt->SetLevel(oldLevel);
+    return;
+  }
+  if (lock == NULL)
+    lock = conditionLock;
+  if (lock != conditionLock) {
+    printf("Bad Lock. Given lock is not equal to current lock.");
+    return;
+  }
+
+  queue->Append((void *)currentThread);
+
+  conditionLock->Release();
+
+  currentThread->Sleep();
+
+  conditionLock->Acquire();
+  
+  (void) interrupt->SetLevel(oldLevel);
+}
+void Condition::Signal(Lock* conditionLock) {
+  IntStatus oldLevel = interrupt->SetLevel(IntOff);
+
+  Thread *thread = NULL;
+  
+  if (queue->IsEmpty()) {
+    (void) interrupt->SetLevel(oldLevel);
+    return;
+  }
+
+  if (lock != conditionLock) {
+    printf("Bad Lock. Given lock is not equal to current lock.");
+    return;
+  }
+
+  thread = (Thread *)queue->Remove();
+  if (thread != NULL){	  
+    scheduler->ReadyToRun(thread);
+  }
+
+  if (queue->IsEmpty())
+    lock = NULL;
+  
+  (void) interrupt->SetLevel(oldLevel);
+}
+void Condition::Broadcast(Lock* conditionLock) {
+  while (!queue->IsEmpty())
+    Signal(conditionLock);
+}
