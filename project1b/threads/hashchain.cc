@@ -43,10 +43,10 @@
 #define START_WRITE() sema->P();
 #define END_WRITE() sema->V();
 #elif defined P1_LOCK //using our implemented nachos lock
-#define START_READ() do{}while(0) //TODO
-#define END_READ() do{}while(0) //TODO
-#define START_WRITE() do{}while(0) //TODO
-#define END_WRITE() do{}while(0) //TODO
+#define START_READ() lock->Acquire();
+#define END_READ() lock->Release();
+#define START_WRITE() lock->Acquire();
+#define END_WRITE() lock->Release();
 #elif defined P1_RWLOCK //using our rwlock
 #define START_READ() rwlocks[hash].startRead();
 #define END_READ() rwlocks[hash].doneRead();
@@ -97,9 +97,9 @@ HashMap::HashMap() {
   for (int i = 0; i < TABLE_SIZE; i++)
     table[i] = NULL;
 #ifdef P1_SEMAPHORE
-  sema = new Semaphore("GLaDoS", 1);
+  sema = new Semaphore("semaphore", 1);
 #elif defined P1_LOCK
-  //insert setup code here
+  lock = new Lock("lock");
 #elif defined P1_RWLOCK
   rwlocks = new RWLock[TABLE_SIZE];
   for(int i = 0; i < TABLE_SIZE; i++) {
@@ -224,7 +224,7 @@ HashMap:: ~HashMap() {
 
 void
 HashMap::increment(int key, int value) { //TODO: make this function threadsafe
-  //int hash = (key % TABLE_SIZE); //may be needed for START_/END_ macros
+  int hash = (key % TABLE_SIZE); //may be needed for START_/END_ macros
   START_WRITE();
   _put(key,_get(key)+value);
   END_WRITE();

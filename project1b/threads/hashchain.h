@@ -29,9 +29,9 @@ private:
 #ifdef P1_SEMAPHORE
       Semaphore* sema;
 #elif defined P1_LOCK
-      //lock based code here
+      Lock* lock; 
 #elif  defined P1_RWLOCK
-      //rwlock based code here
+      RWLock* rwlocks;
 #endif
       void _put(int key, int value);
       int _get(int key);

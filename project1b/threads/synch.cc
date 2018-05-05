@@ -100,11 +100,60 @@ Semaphore::V()
 // Dummy functions -- so we can compile our later assignments
 // Note -- without a correct implementation of Condition::Wait(),
 // the test case in the network assignment won't work!
-Lock::Lock(char* debugName) { }
-Lock::~Lock() { }
-void Lock::Acquire() { }
-void Lock::Release() { }
-bool Lock::isHeldByCurrentThread() { }
+Lock::Lock(char* debugName) {
+  name = debugName;
+  value = 1;
+  queue = new List;
+  owner = NULL;
+  
+}
+Lock::~Lock() {
+  delete queue;
+}
+void Lock::Acquire() {
+  IntStatus oldLevel = interrupt->SetLevel(IntOff);
+  if(isHeldByCurrentThread()){
+    //Emptiness
+  }
+  else if(value){
+    owner = currentThread;
+    value = 0;
+  }
+  else{
+    queue->Append((void *)currentThread);
+    currentThread->Sleep();
+  }
+  
+  (void) interrupt->SetLevel(oldLevel);
+}
+
+void Lock::Release() {
+  IntStatus oldLevel = interrupt->SetLevel(IntOff);
+  Thread* thread = NULL;
+  if(!isHeldByCurrentThread()){
+    printf("WTF?\n");
+  }
+  else if(queue->IsEmpty()){
+    owner = NULL;
+    value = 1;
+  }
+  else{
+    thread = (Thread *)queue->Remove();
+    if (thread != NULL){	  
+        scheduler->ReadyToRun(thread);
+    }
+    owner = thread;
+    value = 0;
+  }
+  
+  (void) interrupt->SetLevel(oldLevel);
+}
+
+bool Lock::isHeldByCurrentThread() {
+  if(owner == NULL) return 0;
+  if(owner == currentThread) return 1;
+  return 0;
+}
 
 Condition::Condition(char* debugName) { }
 Condition::~Condition() { }
