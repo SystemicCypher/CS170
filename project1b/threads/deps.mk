@@ -448,12 +448,12 @@ hashchain.o: ../threads/hashchain.cc /usr/include/stdc-predef.h \
  /usr/include/bits/select.h /usr/include/bits/types/sigset_t.h \
  /usr/include/bits/types/__sigset_t.h /usr/include/sys/sysmacros.h \
  /usr/include/bits/sysmacros.h /usr/include/bits/semaphore.h \
- ../threads/hashchain.h ../threads/synch.h ../threads/copyright.h \
- ../threads/thread.h ../threads/utility.h ../threads/bool.h \
- ../machine/sysdep.h ../threads/copyright.h /usr/include/stdio.h \
- /usr/include/libio.h /usr/include/_G_config.h \
- /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h \
- /usr/include/string.h /usr/include/strings.h ../threads/list.h \
+ ../threads/synch.h ../threads/copyright.h ../threads/thread.h \
+ ../threads/utility.h ../threads/bool.h ../machine/sysdep.h \
+ ../threads/copyright.h /usr/include/stdio.h /usr/include/libio.h \
+ /usr/include/_G_config.h /usr/include/bits/stdio_lim.h \
+ /usr/include/bits/sys_errlist.h /usr/include/string.h \
+ /usr/include/strings.h ../threads/list.h ../threads/hashchain.h \
  ../threads/system.h ../threads/scheduler.h ../machine/interrupt.h \
  ../threads/list.h ../machine/stats.h ../machine/timer.h \
  ../threads/utility.h
@@ -545,4 +545,8 @@ rwlock.o: ../threads/rwlock.cc /usr/include/stdc-predef.h \
  /usr/include/bits/stdint-intn.h /usr/include/sys/select.h \
  /usr/include/bits/select.h /usr/include/bits/types/sigset_t.h \
  /usr/include/bits/types/__sigset_t.h /usr/include/sys/sysmacros.h \
- /usr/include/bits/sysmacros.h /usr/include/bits/semaphore.h
+ /usr/include/bits/sysmacros.h /usr/include/bits/semaphore.h \
+ ../threads/synch.h ../threads/copyright.h ../threads/thread.h \
+ ../threads/utility.h ../threads/bool.h ../machine/sysdep.h \
+ ../threads/copyright.h /usr/include/string.h /usr/include/strings.h \
+ ../threads/list.h

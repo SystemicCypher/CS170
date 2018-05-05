@@ -1,12 +1,14 @@
 #ifndef __RWLOCK_H__
 #define __RWLOCK_H__
-#include<semaphore.h>
-
+#include <semaphore.h>
+#include "synch.h"
 class RWLock{
 private:
   int AR, WR, AW, WW;
-  pthread_cond_t okToRead, okToWrite;
-  pthread_mutex_t lock;
+  //pthread_cond_t okToRead, okToWrite;
+  //pthread_mutex_t lock;
+  Condition *okToRead, *okToWrite;
+  Lock *lock;
 public:
     RWLock();
     ~RWLock();
