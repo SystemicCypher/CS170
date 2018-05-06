@@ -219,6 +219,13 @@ HashMap:: ~HashMap() {
     }
   }
   delete[] table;
+#ifdef P1_SEMAPHORE
+  delete sema;
+#elif defined P1_LOCK
+  delete lock;
+#elif defined P1_RWLOCK
+  delete [] rwlocks;
+#endif
 }
 
 
