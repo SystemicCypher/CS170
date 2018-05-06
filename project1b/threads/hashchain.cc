@@ -178,6 +178,7 @@ HashMap::put(int key1, int value1) { //TODO: make this function threadsafe
 void
 HashMap::remove(int key) { //TODO: make this function threadsafe
   int hash = (key % TABLE_SIZE);
+  START_WRITE();
   if (table[hash] != NULL) {
     YIELD();
     LinkedHashEntry *prevEntry = NULL;
@@ -204,6 +205,7 @@ HashMap::remove(int key) { //TODO: make this function threadsafe
       }
     }
   }
+  END_WRITE();
 }
 
 HashMap:: ~HashMap() {
