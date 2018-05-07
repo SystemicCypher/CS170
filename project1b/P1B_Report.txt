@@ -70,3 +70,6 @@ empty, Signal is called on the condition lock.
 Compilation Instructions:
 Open a terminal in the project1b threads directory and then 
 type 'make'
+
+Functionality:
+Everything works, it passes all tests locally.
