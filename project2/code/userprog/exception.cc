@@ -68,28 +68,46 @@ ExceptionHandler(ExceptionType which)
     int result, type = machine->ReadRegister(2);
 
     if (which == SyscallException) {
-        switch (type) {
-            case SC_Halt:
-                DEBUG('a', "Shutdown, initiated by user program.\n");
-                interrupt->Halt();
-                break;
-            case SC_Exit:
-                DEBUG('a', "Exit() system call invoked.\n");
-                doExit();
-                break;
-            case SC_Exec:
-                DEBUG('a', "Exec() system call invoked.\n");
-                result = doExec();
-                machine->WriteRegister(2, result);
-                break;
-            case SC_Write:
-                DEBUG('a', "Write() system call invoked.\n");
-                doWrite();
-                break;
-            default:
-                printf("Unexpected system call %d. Halting.\n", type);
-                interrupt->Halt();
-        }
+      switch (type) {
+      case SC_Halt:
+	DEBUG('a', "Shutdown, initiated by user program.\n");
+	interrupt->Halt();
+	break;
+      case SC_Exit:
+	DEBUG('a', "Exit() system call invoked.\n");
+	doExit();
+	break;
+      case SC_Exec:
+	DEBUG('a', "Exec() system call invoked.\n");
+	result = doExec();
+	machine->WriteRegister(2, result);
+	break;
+      case SC_Join:
+	DEBUG('a', "Join() system call invoked.\n");
+	//result = Join(machine->ReadRegister(3));
+	//machine->WriteRegister(2, result);
+	break;
+      case SC_Create:
+	DEBUG('a', "Create() system call invoked.\n");
+	break;
+      case SC_Open:
+	break;
+      case SC_Read:
+	break;
+      case SC_Write:
+	DEBUG('a', "Write() system call invoked.\n");
+	doWrite();
+	break;
+      case SC_Close:
+	break;
+      case SC_Fork:
+	break;
+      case SC_Yield:
+	break;
+      default:
+	printf("Unexpected system call %d. Halting.\n", type);
+	interrupt->Halt();
+      }
     } else {
         printf("Unexpected user mode exception %d. Halting.\n", which);
         interrupt->Halt();
