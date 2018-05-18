@@ -37,7 +37,14 @@
 
 void doExit();
 int doExec();
+int doJoin();
+void doCreate();
+int doOpen();
 void doWrite();
+int doRead();
+void doClose();
+void doFork();
+void doYield();
 
 //----------------------------------------------------------------------
 // ExceptionHandler
@@ -84,25 +91,38 @@ ExceptionHandler(ExceptionType which)
 	break;
       case SC_Join:
 	DEBUG('a', "Join() system call invoked.\n");
-	//result = Join(machine->ReadRegister(3));
-	//machine->WriteRegister(2, result);
+	result = doJoin();
+	machine->WriteRegister(2, result);
 	break;
       case SC_Create:
 	DEBUG('a', "Create() system call invoked.\n");
+	doCreate();
 	break;
       case SC_Open:
+	DEBUG('a', "Open() system call invoked.\n");
+	result = doOpen();
+	machine->WriteRegister(2, result);
 	break;
-      case SC_Read:
+      case SC_Read:	
+	DEBUG('a', "Read() system call invoked.\n");
+	result = doRead();
+	machine->WriteRegister(2, result);
 	break;
       case SC_Write:
 	DEBUG('a', "Write() system call invoked.\n");
 	doWrite();
 	break;
       case SC_Close:
+	DEBUG('a', "Close() system call invoked.\n");
+	doClose();
 	break;
       case SC_Fork:
+	DEBUG('a', "Fork() system call invoked.\n");
+	doFork();
 	break;
       case SC_Yield:
+	DEBUG('a', "Yield() system call invoked.\n");
+	doYield();
 	break;
       default:
 	printf("Unexpected system call %d. Halting.\n", type);
@@ -218,9 +238,9 @@ int doExec()
 
 void doWrite()
 {
-    int userBufVirtAddr = machine->ReadRegister(4);
-    int userBufSize = machine->ReadRegister(5);
-    int dstFile = machine->ReadRegister(6);
+  int userBufVirtAddr = machine->ReadRegister(4);
+  int userBufSize = machine->ReadRegister(5);
+  int dstFile = machine->ReadRegister(6);
 
     int i, userBufPhysAddr, bytesToEndOfPage, bytesToCopy, bytesCopied = 0;
     char *kernelBuf = new char[userBufSize + 1];
@@ -255,3 +275,37 @@ void doWrite()
     delete[] kernelBuf;
 }
 
+int doJoin() //STUB
+{
+  return -1;
+}
+
+void doCreate() //STUB
+{
+  return;
+}
+
+int doOpen() //STUB
+{
+  return -1;
+}
+
+int doRead() //STUB
+{
+  return -1;
+}
+
+void doClose() //STUB
+{
+  return;
+}
+
+void doFork() //STUB
+{
+  return;
+}
+
+void doYield() //STUB
+{
+  return;
+}
