@@ -203,7 +203,7 @@ int doExec()
     // initialized with the parent's PID (i.e. that of the current process)
     // and the newly created child's PID.
     parentPid = 0;
-    childPid = processManager->allocPid();
+    childPid = processManager->getPID();
     childPcb = new PCB(parentPid, childPid);
 
     // The new process needs a kernel thread by which we can manage its state
@@ -213,7 +213,7 @@ int doExec()
     // space by loading in the program found in the executable file that was
     // passed in as the first argument.
     execFile = fileSystem->Open(filename);
-    childPcb->thread->space = new AddrSpace(execFile);
+    childPcb->thread->space = new AddrSpace(execFile, childPcb);
 
     delete execFile;
 
