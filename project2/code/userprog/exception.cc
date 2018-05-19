@@ -501,9 +501,9 @@ void writeImpl() {
         //Fetch data from the user space to this system buffer using  userReadWrite().
         //Implement me
         UserOpenFile* userFile = currentThread->space->getPCB()->getFile(fileID);
-	//Use openFileManager to find the openned file structure (SysOpenFile)
-	//Use writeAt() to write out the above buffer withe size listed..
-	//Increment the current offset  by the actual number of bytes written.
+	    //Use openFileManager to find the openned file structure (SysOpenFile)
+	    //Use writeAt() to write out the above buffer withe size listed..
+	    //Increment the current offset  by the actual number of bytes written.
         //Implement me
             
         
