@@ -170,8 +170,8 @@ int forkImpl() {
     int newProcessPC = machine->ReadRegister(4);
 
     // Find a new PID, and then construct new PCB. 
-   // Implement me
-    int newPID = -1;
+    int newPID = processManager -> getPID();
+    PCB newPCB = PCB(newPID, ) //no clue???
     // Make a copy of the address space as the child space, save its registers
    // Implement me
     
