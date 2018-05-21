@@ -26,6 +26,21 @@ PCB::PCB(int pid, int parentPID) : openFilesBitMap(MAX_NUM_FILES_OPEN) {
     openFilesBitMap.Mark(1);
 }
 
+PCB::PCB(int pid, int parentPID, BitMap parentOpenFilesBitMap) : openFilesBitMap(MAX_NUM_FILES_OPEN) {
+
+    this->pid = pid;
+    this->parentPID = parentPID;
+    this->thread = NULL;
+    //openFilesBitMap maintains what has been opened.
+    // Account for files that are already opened, including descriptor  0 and 1
+    // Child process should inherit the file descriptors openned in the parent process
+    // Implement me
+    for (int i = 0; i < MAX_NUM_FILES_OPEN; i++) {
+      if(parentOpenFilesBitMap.Test(i))
+	openFilesBitMap.Mark(i);
+    }
+}
+
 //-----------------------------------------------------------------------------
 // PCB::~PCB
 //
@@ -33,6 +48,10 @@ PCB::PCB(int pid, int parentPID) : openFilesBitMap(MAX_NUM_FILES_OPEN) {
 //-----------------------------------------------------------------------------
 
 PCB::~PCB() {}
+
+BitMap PCB::getOpenFilesBitMap() {
+  return this->openFilesBitMap;
+}
 
 //-----------------------------------------------------------------------------
 // PCB::getPID
