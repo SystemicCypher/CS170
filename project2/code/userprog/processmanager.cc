@@ -99,8 +99,14 @@ void ProcessManager::join(int pid) {
     }
    // Increment  processesWaitingOnPID[pid].
    // Conditional waiting on when it becomes 0. When it bcomes 0, recycle pid.
-   // Implement me. 
-
+   // Implement me.
+    lockForOtherProcess->Acquire();
+    processesWaitingOnPID[pid]++;
+    conditionForOtherProcess->Wait(lockForOtherProcess);
+    processesWaitingOnPID[pid]--;
+    if (processesWaitingOnPID[pid] == 0)
+      processesBitMap.Clear(pid);
+    lockForOtherProcess->Release();
 }
 
 //-----------------------------------------------------------------------------
@@ -118,6 +124,9 @@ void ProcessManager::broadcast(int pid) {
     if (condition != NULL) { // something is waiting on this process
 	// Wake up others 
 	// Implement me
+      lock->Acquire();
+      condition->Broadcast(lock);
+      lock->Release();
     }
 }
 

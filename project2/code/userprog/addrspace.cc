@@ -159,12 +159,25 @@ AddrSpace::AddrSpace(const AddrSpace* other, PCB* pcb) {
         pageTable = new TranslationEntry[numPages];
 	//Allocate physical pages for each page in the new process under pcb
 	//Implement me
+	for (int i = 0; i < numPages; i++) {
+	  pageTable[i].virtualPage = (other->pageTable)[i].virtualPage;
+	  pageTable[i].physicalPage = (other->pageTable)[i].physicalPage;
+	  pageTable[i].valid = (other->pageTable)[i].valid;
+	  pageTable[i].use = (other->pageTable)[i].use;
+	  pageTable[i].dirty = (other->pageTable)[i].dirty;
+	  pageTable[i].readOnly = (other->pageTable)[i].readOnly;
+	}
         memoryManager->lock->Release();
-
+	
         machineLock->Acquire();
 	//Copy page content of the other process to the new address space page by page
         //Implement me
-        
+        for (int i = 0; i < numPages; i++) {
+	  int physAddr = pageTable[i].physicalPage * PageSize;
+	  int otherPhysAddr = (other->pageTable)[i].physicalPage * PageSize;
+	  bzero(&(machine->mainMemory[physAddr]), PageSize);
+	  bcopy(&(machine->mainMemory[otherPhysAddr]), &(machine->mainMemory[physAddr]), PageSize);
+	}
         machineLock->Release();
     }
     else {// Cannot fit into the current available memory

@@ -24,6 +24,7 @@ class PCB {
 
     public:
         PCB(int pid, int parentPID);
+	PCB(int pid, int parentPID, BitMap parentOpenFilesBitMap);
         ~PCB();
         int getPID();
         int status;
@@ -31,6 +32,8 @@ class PCB {
         int addFile(UserOpenFile file);
         UserOpenFile* getFile(int fileID);
         void removeFile(int fileID);
+	BitMap getOpenFilesBitMap();
+	
 
     private:
         BitMap openFilesBitMap;
