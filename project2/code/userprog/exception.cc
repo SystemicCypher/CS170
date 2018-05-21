@@ -173,7 +173,7 @@ int forkImpl() {
     int newPID = processManager -> getPID();
     PCB newPCB = PCB(newPID, currentThread->space->getPCB()->getPID());
     // Make a copy of the address space as the child space, save its registers
-    childThread->space = new AddrSpace(currentThread->space, newPCB);
+    childThread->space = new AddrSpace(currentThread->space, newPCB); //Probably incorrect, right idea - wrong implementation
     
 
     // Mandatory printout of the forked process
@@ -224,6 +224,11 @@ void yieldImpl() {
     //Now this process is resumed for exectuion after yielding.
     //Restore the corresponding user process's states (both registers and page table)
     
+    currentThread->SaveUserState();
+    currentThread->space->SaveState();
+    currentThread->Yield();
+    currentThread->space->RestoreState();
+    currentThread->RestoreUserState();
 
    
 }
@@ -242,9 +247,9 @@ void exitImpl() {
     fprintf(stderr, "Process %d exits with %d\n", currPID, status);
 
     //Set the exist status in the PCB of this process 
-    
+    currentThread->space->getPCB()->status = P_BAD;
     //Also let other processes  know this process  exits.
-
+    processManager->broadcast(currPID);
    //Clean up the space of this process
     delete currentThread->space;
     currentThread->space = NULL;
@@ -253,6 +258,7 @@ void exitImpl() {
 
     
     //Terminate the current Nacho thread
+    currentThread->Finish();
 }
 
 //----------------------------------------------------------------------
@@ -267,12 +273,11 @@ int joinImpl() {
     currentThread->space->getPCB()->status = P_BLOCKED;
         
    // Use proessManager to join otherPID 
-   	// Implement me
-
+   	processManager->join(otherPID);
 
 
    //Change the process state in its PCB as P_RUNNING
-   	// Implement me
+   	currentThread->space->getPCB()->status = P_RUNNING;
     
     return processManager->getStatus(otherPID);
 }
@@ -418,7 +423,9 @@ int openImpl(char* filename) {
         SysOpenFile currSysFile;
 
        // Setup this SysOpenFile data structure
-   	// Implement me
+        currSysFile.file = openFile
+        currSysFile.numProcessesAccessing = 1;
+        currSysFile.filename = filename;
        
         index = openFileManager->addFile(currSysFile);
     }
@@ -430,7 +437,9 @@ int openImpl(char* filename) {
     UserOpenFile currUserFile;
     
    //Set up this UserOpenFile data structure
-   // Implement me
+    currUserFile.fileTableIndex = index;
+    currUserFile.currentPosition = 0;
+    currUserFile.filename = filename;
     int currFileID = currentThread->space->getPCB()->addFile(currUserFile);
     return currFileID;
 }
