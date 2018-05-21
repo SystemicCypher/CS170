@@ -171,9 +171,9 @@ int forkImpl() {
 
     // Find a new PID, and then construct new PCB. 
     int newPID = processManager -> getPID();
-    PCB newPCB = PCB(newPID, ) //no clue???
+    PCB newPCB = PCB(newPID, currentThread->space->getPCB()->getPID());
     // Make a copy of the address space as the child space, save its registers
-   // Implement me
+    childThread->space = new AddrSpace(currentThread->space, newPCB);
     
 
     // Mandatory printout of the forked process
@@ -224,7 +224,7 @@ void yieldImpl() {
     //Now this process is resumed for exectuion after yielding.
     //Restore the corresponding user process's states (both registers and page table)
     
-   // Implement me
+
    
 }
 
