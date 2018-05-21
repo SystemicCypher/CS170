@@ -23,6 +23,7 @@
 #include "syscall.h"
 #include "machine.h"
 #include "pcb.h"
+#include "addrspace.h"
 
 #define MAX_FILENAME_LEN 128
 #define USER_READ 0 // passed as type for userReadWrite
@@ -173,7 +174,7 @@ int forkImpl() {
     int newPID = processManager -> getPID();
     PCB newPCB = PCB(newPID, currentThread->space->getPCB()->getPID());
     // Make a copy of the address space as the child space, save its registers
-    childThread->space = new AddrSpace(currentThread->space, newPCB); //Probably incorrect, right idea - wrong implementation
+    childThread->space = new AddrSpace(currentThread->space, &newPCB); //Probably incorrect, right idea - wrong implementation
     
 
     // Mandatory printout of the forked process
@@ -423,7 +424,7 @@ int openImpl(char* filename) {
         SysOpenFile currSysFile;
 
        // Setup this SysOpenFile data structure
-        currSysFile.file = openFile
+        currSysFile.file = openFile;
         currSysFile.numProcessesAccessing = 1;
         currSysFile.filename = filename;
        
