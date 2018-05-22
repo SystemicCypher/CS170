@@ -172,10 +172,12 @@ int forkImpl() {
 
     // Find a new PID, and then construct new PCB. 
     int newPID = processManager -> getPID();
-    PCB newPCB = PCB(newPID, currentThread->space->getPCB()->getPID());
+    PCB* newPCB = new PCB(newPID, currentThread->space->getPCB()->getPID());
     // Make a copy of the address space as the child space, save its registers
-    childThread->space = new AddrSpace(currentThread->space, &newPCB); //Probably incorrect, right idea - wrong implementation
-    
+    childThread->space = new AddrSpace(currentThread->space, newPCB); //Probably incorrect, right idea - wrong implementation
+    childThread->SaveUserState();
+
+    processManager->addProcess(newPCB, newPID);
 
     // Mandatory printout of the forked process
     PCB* parentPCB = currentThread->space->getPCB();
@@ -183,7 +185,7 @@ int forkImpl() {
     //fprintf(stderr, "Process %d Fork: start at address 0x%x with %d pages memory\n", currPID, newProcessPC, childNumPages);
       
     // Set up the function for the that new process will run and yield
-    //childThread->Fork(copyStateBack, newProcessPC);
+    childThread->Fork(copyStateBack, newProcessPC);
     currentThread->Yield(); 
     return newPID;
 }
@@ -498,24 +500,47 @@ void writeImpl() {
     int fileID = machine->ReadRegister(6);
 
     char* buffer = new char[size + 1];
+    int i, userBufPhysAddr, bytesToEndOfPage, bytesToCopy, bytesCopied = 0;
+
     if (fileID == ConsoleOutput) {
-        userReadWrite(writeAddr, buffer, size, USER_WRITE);
-        buffer[size] = 0; // always terminate
-        //printf("%s", buffer);
+
+        // Copy bytes from user memory into kernel memory
+        while (bytesCopied < size) {
+
+            // Perform virtual to physical address translation
+            userBufPhysAddr = currentThread->space->Translate(writeAddr + bytesCopied);
+
+            // Determine how many bytes we can read from this page
+            bytesToEndOfPage = PageSize - userBufPhysAddr % PageSize;
+            if (size < bytesToEndOfPage)
+                bytesToCopy = size;
+            else
+                bytesToCopy = bytesToEndOfPage;
+
+            // Copy bytes into kernel buffer
+            memcpy(&buffer[bytesCopied], &machine->mainMemory[userBufPhysAddr], bytesToCopy);
+            bytesCopied += bytesToCopy;
+        }
+
+        // Write buffer to console (writes should be atomic)
         openFileManager->consoleWriteLock->Acquire();
-        for (int i = 0; i < size; ++i)
+        for (i = 0; i < size; ++i)
             UserConsolePutChar(buffer[i]);
         openFileManager->consoleWriteLock->Release();
     }
     else {
         //Fetch data from the user space to this system buffer using  userReadWrite().
         //Implement me
-        UserOpenFile* userFile = currentThread->space->getPCB()->getFile(fileID);
-	    //Use openFileManager to find the openned file structure (SysOpenFile)
-	    //Use writeAt() to write out the above buffer withe size listed..
-	    //Increment the current offset  by the actual number of bytes written.
-        //Implement me
-            
+      userReadWrite(writeAddr, buffer, size, USER_WRITE);
+      UserOpenFile* userFile = currentThread->space->getPCB()->getFile(fileID);
+      //Use openFileManager to find the openned file structure (SysOpenFile)
+      int index = 0;
+      SysOpenFile* sysfile = openFileManager->getFile(userFile->filename, index);
+      //Use writeAt() to write out the above buffer withe size listed..
+      sysfile->file->WriteAt(buffer, size, userFile->currentPosition); 
+      //Increment the current offset  by the actual number of bytes written.
+      //Implement me
+      userFile->currentPosition += size;      
         
     }
     delete [] buffer;
