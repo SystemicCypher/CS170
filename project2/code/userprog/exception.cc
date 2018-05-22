@@ -495,6 +495,7 @@ int userReadWrite(int virtAddr, char* buffer, int size, int type) {
 //----------------------------------------------------------------------
 void writeImpl() {
     
+
     int writeAddr = machine->ReadRegister(4);
     int size = machine->ReadRegister(5);
     int fileID = machine->ReadRegister(6);
@@ -541,9 +542,9 @@ void writeImpl() {
       //Increment the current offset  by the actual number of bytes written.
       //Implement me
       userFile->currentPosition += size;      
-        
-    }
-    delete [] buffer;
+    
+  }
+  delete [] kernelBuf;
 }
 
 //----------------------------------------------------------------------
