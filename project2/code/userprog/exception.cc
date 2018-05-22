@@ -270,19 +270,19 @@ void exitImpl() {
 
 int joinImpl() {
 
-    int otherPID = machine->ReadRegister(4);
-
-   //Change the process state in its PCB as P_BLOCKED
-    currentThread->space->getPCB()->status = P_BLOCKED;
-        
-   // Use proessManager to join otherPID 
-   	processManager->join(otherPID);
-
-
-   //Change the process state in its PCB as P_RUNNING
-   	currentThread->space->getPCB()->status = P_RUNNING;
-    
-    return processManager->getStatus(otherPID);
+  int otherPID = machine->ReadRegister(4);
+  
+  //Change the process state in its PCB as P_BLOCKED
+  currentThread->space->getPCB()->status = P_BLOCKED;
+  
+  // Use proessManager to join otherPID 
+  processManager->join(otherPID);
+  
+  
+  //Change the process state in its PCB as P_RUNNING
+  currentThread->space->getPCB()->status = P_RUNNING;
+  
+  return processManager->getStatus(otherPID);
 }
 
 //----------------------------------------------------------------------
