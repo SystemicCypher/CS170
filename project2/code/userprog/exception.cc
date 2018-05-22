@@ -182,7 +182,7 @@ int forkImpl() {
     // Mandatory printout of the forked process
     PCB* parentPCB = currentThread->space->getPCB();
     PCB* childPCB = childThread->space->getPCB();
-    //fprintf(stderr, "Process %d Fork: start at address 0x%x with %d pages memory\n", currPID, newProcessPC, childNumPages);
+    fprintf(stderr, "Process %d Fork: start at address 0x%x with %d pages memory\n", currentThread->space->getPCB()->getPID(), newProcessPC, childThread->space->getNumPages());
       
     // Set up the function for the that new process will run and yield
     childThread->Fork(copyStateBack, newProcessPC);
@@ -544,7 +544,7 @@ void writeImpl() {
       userFile->currentPosition += size;      
     
   }
-  delete [] kernelBuf;
+  delete [] buffer;
 }
 
 //----------------------------------------------------------------------
