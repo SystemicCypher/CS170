@@ -172,18 +172,19 @@ int forkImpl() {
 
     // Find a new PID, and then construct new PCB. 
     int newPID = processManager -> getPID();
-    PCB newPCB = PCB(newPID, currentThread->space->getPCB()->getPID());
+    PCB* newPCB = new PCB(newPID, currentThread->space->getPCB()->getPID());
     // Make a copy of the address space as the child space, save its registers
-    childThread->space = new AddrSpace(currentThread->space, &newPCB); //Probably incorrect, right idea - wrong implementation
+    childThread->space = new AddrSpace(currentThread->space, newPCB); //Probably incorrect, right idea - wrong implementation
+    childThread->SaveUserState();
+    processManager->addProcess(newPCB, newPID);
     
-
     // Mandatory printout of the forked process
     PCB* parentPCB = currentThread->space->getPCB();
     PCB* childPCB = childThread->space->getPCB();
     //fprintf(stderr, "Process %d Fork: start at address 0x%x with %d pages memory\n", currPID, newProcessPC, childNumPages);
       
     // Set up the function for the that new process will run and yield
-    //childThread->Fork(copyStateBack, newProcessPC);
+    childThread->Fork(copyStateBack, newProcessPC);
     currentThread->Yield(); 
     return newPID;
 }
@@ -492,33 +493,51 @@ int userReadWrite(int virtAddr, char* buffer, int size, int type) {
 // Write file system call implementation
 //----------------------------------------------------------------------
 void writeImpl() {
-    
-    int writeAddr = machine->ReadRegister(4);
-    int size = machine->ReadRegister(5);
-    int fileID = machine->ReadRegister(6);
+  int userBufVirtAddr = machine->ReadRegister(4);
+  int userBufSize = machine->ReadRegister(5);
+  int dstFile = machine->ReadRegister(6);
+  
+  int i, userBufPhysAddr, bytesToEndOfPage, bytesToCopy, bytesCopied = 0;
+  char *kernelBuf = new char[userBufSize + 1];
 
-    char* buffer = new char[size + 1];
-    if (fileID == ConsoleOutput) {
-        userReadWrite(writeAddr, buffer, size, USER_WRITE);
-        buffer[size] = 0; // always terminate
-        //printf("%s", buffer);
-        openFileManager->consoleWriteLock->Acquire();
-        for (int i = 0; i < size; ++i)
-            UserConsolePutChar(buffer[i]);
-        openFileManager->consoleWriteLock->Release();
+  if (dstFile == ConsoleOutput) {
+    
+    // Copy bytes from user memory into kernel memory
+    while (bytesCopied < userBufSize) {
+      
+      // Perform virtual to physical address translation
+      userBufPhysAddr = currentThread->space->Translate(userBufVirtAddr + bytesCopied);
+      
+      // Determine how many bytes we can read from this page
+      bytesToEndOfPage = PageSize - userBufPhysAddr % PageSize;
+      if (userBufSize < bytesToEndOfPage)
+	bytesToCopy = userBufSize;
+      else
+	bytesToCopy = bytesToEndOfPage;
+      
+      // Copy bytes into kernel buffer
+      memcpy(&kernelBuf[bytesCopied], &machine->mainMemory[userBufPhysAddr], bytesToCopy);
+      bytesCopied += bytesToCopy;
     }
-    else {
-        //Fetch data from the user space to this system buffer using  userReadWrite().
-        //Implement me
-        UserOpenFile* userFile = currentThread->space->getPCB()->getFile(fileID);
-	    //Use openFileManager to find the openned file structure (SysOpenFile)
-	    //Use writeAt() to write out the above buffer withe size listed..
-	    //Increment the current offset  by the actual number of bytes written.
-        //Implement me
-            
-        
-    }
-    delete [] buffer;
+    
+    // Write buffer to console (writes should be atomic)
+    openFileManager->consoleWriteLock->Acquire();
+    for (i = 0; i < userBufSize; ++i)
+      UserConsolePutChar(kernelBuf[i]);
+    openFileManager->consoleWriteLock->Release();
+  }
+  else {
+    //Fetch data from the user space to this system buffer using  userReadWrite().
+    //Implement me
+    UserOpenFile* userFile = currentThread->space->getPCB()->getFile(dstFile);
+    //Use openFileManager to find the openned file structure (SysOpenFile)
+    //Use writeAt() to write out the above buffer withe size listed..
+    //Increment the current offset  by the actual number of bytes written.
+    //Implement me
+    
+    
+  }
+  delete [] kernelBuf;
 }
 
 //----------------------------------------------------------------------
