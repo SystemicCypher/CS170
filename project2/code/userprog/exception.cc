@@ -398,7 +398,7 @@ void readFilenameFromUsertoKernel(char* filename) {
 
 void createImpl(char* filename) {
     //use fileSystem to create a file
-	
+  fileSystem->Create(filename, PageSize);
 }
 
 //----------------------------------------------------------------------
