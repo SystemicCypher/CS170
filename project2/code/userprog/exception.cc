@@ -257,11 +257,19 @@ void exitImpl() {
     delete currentThread->space;
     currentThread->space = NULL;
     processManager->clearPID(currPID);
-    
 
-    
+    bool flag = 0;
+    for (int i = 0; i < MAX_PROCESSES; i++) {
+      if (processManager->getStatus(i) != -1)
+	flag = 1;
+    }
+
+    if(flag == 1)
+      currentThread->Finish();
+    else
+      interrupt->Halt();
     //Terminate the current Nacho thread
-    currentThread->Finish();
+    //currentThread->Finish();
 }
 
 //----------------------------------------------------------------------
@@ -274,6 +282,9 @@ int joinImpl() {
   
   //Change the process state in its PCB as P_BLOCKED
   currentThread->space->getPCB()->status = P_BLOCKED;
+
+  if(processManager->getStatus(otherPID) == -1)
+    return -1;
   
   // Use proessManager to join otherPID 
   processManager->join(otherPID);
