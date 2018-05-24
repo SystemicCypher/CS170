@@ -387,7 +387,7 @@ void readFilenameFromUsertoKernel(char* filename) {
 
 void createImpl(char* filename) {
     //use fileSystem to create a file
-   	// Implement me
+	
 }
 
 //----------------------------------------------------------------------
@@ -571,9 +571,13 @@ int readImpl() {
 	
 	UserOpenFile* userFile = currentThread->space->getPCB()->getFile(fileID);
 	//Now from openFileManger, find the SystemOpenFile data structure for this userFile.
+	int index = 0;
+	SysOpenFile* sysfile = openFileManager->getFile(userFile->filename, index);
 	//Use ReadAt() to read the file at selected offset to this system buffer buffer[]
+	sysfile->file->ReadAt(buffer, size, userFile->currentPosition);
 	// Adust the offset in userFile to reflect my current position.
 	// Implement me
+	userFile->currentPosition += size;
         
     }
     //Now copy data from the system buffer to the targted main memory space using userReadWrite()
@@ -592,10 +596,14 @@ void closeImpl() {
     int fileID = machine->ReadRegister(4);
 
     // Find the data structure of this file openned in PCB.
+    UserOpenFile* userFile = currentThread->space->getPCB()->getFile(fileID);
     // Use openFileManager to get a pointer to the system-wide open file data structure
+    int index = 0;
+    SysOpenFile* sysfile = openFileManager->getFile(userFile->filename, index);
     // Close the file in the system-wide openfile data structure
+    sysfile->closedBySingleProcess();
     // Close and removethe file  in the open file list of this process PCB.
-    // Implement me
+    currentThread->space->getPCB()->removeFile(fileID);
 }
 
 //----------------------------------------------------------------------
