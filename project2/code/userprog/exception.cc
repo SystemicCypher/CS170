@@ -398,7 +398,7 @@ void readFilenameFromUsertoKernel(char* filename) {
 
 void createImpl(char* filename) {
     //use fileSystem to create a file
-	
+  fileSystem->Create(filename, PageSize);
 }
 
 //----------------------------------------------------------------------
@@ -474,6 +474,7 @@ int userReadWrite(int virtAddr, char* buffer, int size, int type) {
         while (size > 0) {
             //Translate the virtual address to phyiscal address physAddr 
             //Implement me
+	  machine->Translate(virtAddr, &physAddr, size, false);
             numBytesFromPSLeft = PageSize - physAddr % PageSize;
             numBytesToCopy = (numBytesFromPSLeft < size) ? numBytesFromPSLeft : size;
             bcopy(buffer + numBytesCopied, machine->mainMemory + physAddr, numBytesToCopy);
@@ -486,6 +487,7 @@ int userReadWrite(int virtAddr, char* buffer, int size, int type) {
         while (size > 0) {
             //Translate the virtual address to phyiscal address physAddr 
             //Implement me
+	  machine->Translate(virtAddr, &physAddr, size, false);
             numBytesFromPSLeft = PageSize - physAddr % PageSize;
             numBytesToCopy = (numBytesFromPSLeft < size) ? numBytesFromPSLeft : size;
             bcopy(machine->mainMemory + physAddr, buffer + numBytesCopied, numBytesToCopy);
@@ -537,7 +539,7 @@ void writeImpl() {
         // Write buffer to console (writes should be atomic)
         openFileManager->consoleWriteLock->Acquire();
         for (i = 0; i < size; ++i)
-            UserConsolePutChar(buffer[i]);
+	  UserConsolePutChar(buffer[i]);
         openFileManager->consoleWriteLock->Release();
     }
     else {
@@ -547,7 +549,7 @@ void writeImpl() {
       UserOpenFile* userFile = currentThread->space->getPCB()->getFile(fileID);
       //Use openFileManager to find the openned file structure (SysOpenFile)
       int index = 0;
-      SysOpenFile* sysfile = openFileManager->getFile(userFile->filename, index);
+      SysOpenFile* sysfile = openFileManager->getFile(userFile->fileTableIndex);
       //Use writeAt() to write out the above buffer withe size listed..
       sysfile->file->WriteAt(buffer, size, userFile->currentPosition); 
       //Increment the current offset  by the actual number of bytes written.
@@ -583,7 +585,7 @@ int readImpl() {
 	UserOpenFile* userFile = currentThread->space->getPCB()->getFile(fileID);
 	//Now from openFileManger, find the SystemOpenFile data structure for this userFile.
 	int index = 0;
-	SysOpenFile* sysfile = openFileManager->getFile(userFile->filename, index);
+	SysOpenFile* sysfile = openFileManager->getFile(userFile->fileTableIndex);	
 	//Use ReadAt() to read the file at selected offset to this system buffer buffer[]
 	sysfile->file->ReadAt(buffer, size, userFile->currentPosition);
 	// Adust the offset in userFile to reflect my current position.
@@ -593,7 +595,9 @@ int readImpl() {
     }
     //Now copy data from the system buffer to the targted main memory space using userReadWrite()
     //Implement me
-
+    userReadWrite(readAddr, buffer, size, USER_READ);
+    
+    
     delete [] buffer;
     return numActualBytesRead;
 }

@@ -47,7 +47,7 @@ SysOpenFile* OpenFileManager::getFile(char* filename, int& index) {
     for (int i = 2; i < MAX_SYS_OPEN_FILES; i++) {
         
         if (sysOpenFilesMap.Test(i)) {
-            if (!strcmp(filename, sysOpenFileList[i].filename)) {
+	    if (!strcmp(filename, sysOpenFileList[i].filename)) {
                 index = i;
                 return &sysOpenFileList[index];
             }
