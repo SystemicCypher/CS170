@@ -1,4 +1,4 @@
-// exception.cc 
+// exception.cc
 //  Entry point into the Nachos kernel from user programs.
 //  There are two kinds of things that can cause control to
 //  transfer back to here from user code:
@@ -9,13 +9,13 @@
 //
 //  exceptions -- The user code does something that the CPU can't handle.
 //  For instance, accessing memory that doesn't exist, arithmetic errors,
-//  etc.  
+//  etc.
 //
 //  Interrupts (which can also cause control to transfer from user
 //  code into the Nachos kernel) are handled elsewhere.
 //
 // Copyright (c) 1992-1993 The Regents of the University of California.
-// All rights reserved.  See copyright.h for copyright notice and limitation 
+// All rights reserved.  See copyright.h for copyright notice and limitation
 // of liability and disclaimer of warranty provisions.
 
 #include "copyright.h"
@@ -60,12 +60,12 @@ void closeImpl(void);
 //    arg3 -- r6
 //    arg4 -- r7
 //
-//  The result of the system call, if any, must be put back into r2. 
+//  The result of the system call, if any, must be put back into r2.
 //
 // And don't forget to increment the pc before returning. (Or else you'll
 // loop making the same system call forever!
 //
-//  "which" is the kind of exception.  The list of possible exceptions 
+//  "which" is the kind of exception.  The list of possible exceptions
 //  are in machine.h.
 //----------------------------------------------------------------------
 
@@ -129,7 +129,7 @@ void ExceptionHandler(ExceptionType which)
                 fprintf(stderr, "System Call: [%d] invoked Open\n", pcb->getPID());
                 readFilenameFromUsertoKernel(filename);
                 copyString(filename); // copy bytes to a fresh piece of memory
-                result = openImpl(filename); 
+                result = openImpl(filename);
                 machine->WriteRegister(2, result);
                 break;
             case SC_Write:
@@ -146,11 +146,12 @@ void ExceptionHandler(ExceptionType which)
                 closeImpl();
                 break;
             default:
-                fprintf(stderr, "System Call: %d invoked an unknown syscall!\n", 
+                fprintf(stderr, "System Call: %d invoked an unknown syscall!\n",
                     pcb->getPID());
                 ASSERT(FALSE);
         }
-        
+
+        delete [] filename;
         IncrementPC();
 
     } else {
@@ -170,32 +171,37 @@ int forkImpl() {
 
     int newProcessPC = machine->ReadRegister(4);
 
-    // Find a new PID, and then construct new PCB. 
+    // Find a new PID, and then construct new PCB.
     int newPID = processManager -> getPID();
     PCB* newPCB = new PCB(newPID, currentThread->space->getPCB()->getPID());
     // Make a copy of the address space as the child space, save its registers
-    childThread->space = new AddrSpace(currentThread->space, newPCB); //Probably incorrect, right idea - wrong implementation
-    childThread->SaveUserState();
+    newPCB->status = P_RUNNING;
+    newPCB->thread = childThread;
 
     processManager->addProcess(newPCB, newPID);
 
+    childThread->space = new AddrSpace(currentThread->space, newPCB); //Probably incorrect, right idea - wrong implementation
+    childThread->space->SaveState();
+    childThread->SaveUserState();
+
+
     // Mandatory printout of the forked process
-    PCB* parentPCB = currentThread->space->getPCB();
-    PCB* childPCB = childThread->space->getPCB();
-    fprintf(stderr, "Process %d Fork: start at address 0x%x with %d pages memory\n", currentThread->space->getPCB()->getPID(), newProcessPC, childThread->space->getNumPages());
-      
+    //PCB* parentPCB = currentThread->space->getPCB();
+    //PCB* childPCB = childThread->space->getPCB();
+    //fprintf(stderr, "Process %d Fork: start at address 0x%x with %d pages memory\n", currentThread->space->getPCB()->getPID(), newProcessPC, childThread->space->getNumPages());
+
     // Set up the function for the that new process will run and yield
     childThread->Fork(copyStateBack, newProcessPC);
-    currentThread->Yield(); 
+    currentThread->Yield();
     return newPID;
 }
 
 //----------------------------------------------------------------------
 // copyStateBack
-//      The "dummy" function from 2.1.1 of NACHOS implementation that 
+//      The "dummy" function from 2.1.1 of NACHOS implementation that
 //      copies back the machine registers, PC and return registers saved
 //      from before the yield was performed.
-//      
+//
 //----------------------------------------------------------------------
 
 void copyStateBack(int forkPC) {
@@ -220,20 +226,16 @@ void copyStateBack(int forkPC) {
 //----------------------------------------------------------------------
 
 void yieldImpl() {
-
-    
     //Save the corresponding user process's register states.
     //This kernel thread yields
     //Now this process is resumed for exectuion after yielding.
     //Restore the corresponding user process's states (both registers and page table)
-    
+
     currentThread->SaveUserState();
     currentThread->space->SaveState();
     currentThread->Yield();
     currentThread->space->RestoreState();
     currentThread->RestoreUserState();
-
-   
 }
 
 //----------------------------------------------------------------------
@@ -241,16 +243,15 @@ void yieldImpl() {
 //----------------------------------------------------------------------
 
 void exitImpl() {
+    IntStatus oldLevel = interrupt->SetLevel(IntOff);
 
-
-    //
     int status = machine->ReadRegister(4);
     int currPID = currentThread->space->getPCB()->getPID();
-    
+
     fprintf(stderr, "Process %d exits with %d\n", currPID, status);
 
-    //Set the exist status in the PCB of this process 
-    currentThread->space->getPCB()->status = P_BAD;
+    //Set the exist status in the PCB of this process
+    currentThread->space->getPCB()->status = status;
     //Also let other processes  know this process  exits.
     processManager->broadcast(currPID);
    //Clean up the space of this process
@@ -260,16 +261,16 @@ void exitImpl() {
 
     bool flag = 0;
     for (int i = 0; i < MAX_PROCESSES; i++) {
-      if (processManager->getStatus(i) != -1)
-	flag = 1;
+        if (processManager->getStatus(i) != -1)
+            flag = 1;
     }
 
-    if(flag == 1)
-      currentThread->Finish();
-    else
-      interrupt->Halt();
+    (void) interrupt->SetLevel(oldLevel);
     //Terminate the current Nacho thread
-    //currentThread->Finish();
+    if(flag == 1)
+        currentThread->Finish();
+    else
+        interrupt->Halt();
 }
 
 //----------------------------------------------------------------------
@@ -279,20 +280,20 @@ void exitImpl() {
 int joinImpl() {
 
   int otherPID = machine->ReadRegister(4);
-  
+
   //Change the process state in its PCB as P_BLOCKED
   currentThread->space->getPCB()->status = P_BLOCKED;
 
-  if(processManager->getStatus(otherPID) == -1)
-    return -1;
-  
-  // Use proessManager to join otherPID 
+  if(processManager->getStatus(otherPID) < 0)
+    return processManager->getStatus(otherPID);
+
+  // Use proessManager to join otherPID
   processManager->join(otherPID);
-  
-  
+
+
   //Change the process state in its PCB as P_RUNNING
   currentThread->space->getPCB()->status = P_RUNNING;
-  
+
   return processManager->getStatus(otherPID);
 }
 
@@ -345,7 +346,7 @@ SpaceId execImpl(char* filename) {
     // Close file and execute new process
     delete fileToExecute;
     fprintf(stderr, "Exec Program: %d loading %s\n", currPID, filename);
-    newThread->Fork(execHelper, NULL);
+    newThread->Fork(execHelper, 0);
     currentThread->Yield();
     return newPID;
 }
@@ -360,7 +361,7 @@ int moveBytesFromMemToKernel(int virtAddr, char* buffer, int size) {
     int remainingFromPage = 0;
     int bytesCopied = 0;
     int bytesToCopy = 0;
-    
+
     while (size > 0) {
         physAddr = currentThread->space->Translate(virtAddr);
         remainingFromPage = PageSize - physAddr % PageSize;
@@ -375,7 +376,7 @@ int moveBytesFromMemToKernel(int virtAddr, char* buffer, int size) {
 }
 
 //----------------------------------------------------------------------
-// Helper function to bring a string that represents a filename from 
+// Helper function to bring a string that represents a filename from
 // user space to kernel space.
 //----------------------------------------------------------------------
 
@@ -398,7 +399,8 @@ void readFilenameFromUsertoKernel(char* filename) {
 
 void createImpl(char* filename) {
     //use fileSystem to create a file
-  fileSystem->Create(filename, PageSize);
+  //fileSystem->Create(filename, PageSize);
+  fileSystem->Create(filename, 0);
 }
 
 //----------------------------------------------------------------------
@@ -422,7 +424,7 @@ char* copyString(char* oldStr) {
 //----------------------------------------------------------------------
 
 int openImpl(char* filename) {
-    
+
     int index = 0;
     SysOpenFile* currSysFile = openFileManager->getFile(filename, index);
 
@@ -439,8 +441,8 @@ int openImpl(char* filename) {
        // Setup this SysOpenFile data structure
         currSysFile.file = openFile;
         currSysFile.numProcessesAccessing = 1;
-        currSysFile.filename = filename;
-       
+        currSysFile.filename = copyString(filename);
+
         index = openFileManager->addFile(currSysFile);
     }
     else { // the file is already open by another process
@@ -449,7 +451,7 @@ int openImpl(char* filename) {
 
     // Either way, add it to the current PCB's open file list
     UserOpenFile currUserFile;
-    
+
    //Set up this UserOpenFile data structure
     currUserFile.fileTableIndex = index;
     currUserFile.currentPosition = 0;
@@ -459,7 +461,7 @@ int openImpl(char* filename) {
 }
 
 //----------------------------------------------------------------------
-// Helper function that either reads from main mem into a buffer or 
+// Helper function that either reads from main mem into a buffer or
 // writes from a buffer into main mem.
 //----------------------------------------------------------------------
 
@@ -469,12 +471,17 @@ int userReadWrite(int virtAddr, char* buffer, int size, int type) {
     int numBytesFromPSLeft = 0;
     int numBytesCopied = 0;
     int numBytesToCopy = 0;
+    ExceptionType exception;
 
     if (type == USER_READ) { // Read and copy data from the system buffer to the user space in main memory
         while (size > 0) {
-            //Translate the virtual address to phyiscal address physAddr 
+            //Translate the virtual address to phyiscal address physAddr
             //Implement me
-	  machine->Translate(virtAddr, &physAddr, size, false);
+            do {
+            exception = machine->Translate(virtAddr, &physAddr, size, false);
+            if(exception != NoException)
+                machine->RaiseException(exception, virtAddr);
+            } while (exception != NoException);
             numBytesFromPSLeft = PageSize - physAddr % PageSize;
             numBytesToCopy = (numBytesFromPSLeft < size) ? numBytesFromPSLeft : size;
             bcopy(buffer + numBytesCopied, machine->mainMemory + physAddr, numBytesToCopy);
@@ -485,9 +492,13 @@ int userReadWrite(int virtAddr, char* buffer, int size, int type) {
     }
     else if (type == USER_WRITE) { // Copy data from the user's main memory to the system buffer
         while (size > 0) {
-            //Translate the virtual address to phyiscal address physAddr 
+            //Translate the virtual address to phyiscal address physAddr
             //Implement me
-	  machine->Translate(virtAddr, &physAddr, size, false);
+            do {
+                exception = machine->Translate(virtAddr, &physAddr, size, false);
+                if(exception != NoException)
+                    machine->RaiseException(exception, virtAddr);
+            } while (exception != NoException);
             numBytesFromPSLeft = PageSize - physAddr % PageSize;
             numBytesToCopy = (numBytesFromPSLeft < size) ? numBytesFromPSLeft : size;
             bcopy(machine->mainMemory + physAddr, buffer + numBytesCopied, numBytesToCopy);
@@ -500,14 +511,14 @@ int userReadWrite(int virtAddr, char* buffer, int size, int type) {
         //printf ("Invalid type passed in.\n");
         ASSERT(FALSE);
     }
-    return numBytesCopied; 
+    return numBytesCopied;
 }
 
 //----------------------------------------------------------------------
 // Write file system call implementation
 //----------------------------------------------------------------------
 void writeImpl() {
-    
+
 
     int writeAddr = machine->ReadRegister(4);
     int size = machine->ReadRegister(5);
@@ -517,29 +528,11 @@ void writeImpl() {
     int i, userBufPhysAddr, bytesToEndOfPage, bytesToCopy, bytesCopied = 0;
 
     if (fileID == ConsoleOutput) {
-
-        // Copy bytes from user memory into kernel memory
-        while (bytesCopied < size) {
-
-            // Perform virtual to physical address translation
-            userBufPhysAddr = currentThread->space->Translate(writeAddr + bytesCopied);
-
-            // Determine how many bytes we can read from this page
-            bytesToEndOfPage = PageSize - userBufPhysAddr % PageSize;
-            if (size < bytesToEndOfPage)
-                bytesToCopy = size;
-            else
-                bytesToCopy = bytesToEndOfPage;
-
-            // Copy bytes into kernel buffer
-            memcpy(&buffer[bytesCopied], &machine->mainMemory[userBufPhysAddr], bytesToCopy);
-            bytesCopied += bytesToCopy;
-        }
-
-        // Write buffer to console (writes should be atomic)
+        userReadWrite(writeAddr, buffer, size, USER_WRITE);
+        buffer[size] = 0;
         openFileManager->consoleWriteLock->Acquire();
-        for (i = 0; i < size; ++i)
-	  UserConsolePutChar(buffer[i]);
+        for (int i = 0; i < size; ++i)
+            UserConsolePutChar(buffer[i]);
         openFileManager->consoleWriteLock->Release();
     }
     else {
@@ -548,14 +541,16 @@ void writeImpl() {
       userReadWrite(writeAddr, buffer, size, USER_WRITE);
       UserOpenFile* userFile = currentThread->space->getPCB()->getFile(fileID);
       //Use openFileManager to find the openned file structure (SysOpenFile)
-      int index = 0;
+      if (userFile == NULL)
+        return;
+      else {
       SysOpenFile* sysfile = openFileManager->getFile(userFile->fileTableIndex);
       //Use writeAt() to write out the above buffer withe size listed..
-      sysfile->file->WriteAt(buffer, size, userFile->currentPosition); 
+      int numBytesWritten = sysfile->file->WriteAt(buffer, size, userFile->currentPosition);
       //Increment the current offset  by the actual number of bytes written.
       //Implement me
-      userFile->currentPosition += size;      
-    
+      userFile->currentPosition += numBytesWritten;
+    }
   }
   delete [] buffer;
 }
@@ -581,23 +576,24 @@ int readImpl() {
         }
     }
     else {//Read data from the file to the system buffer
-	
-	UserOpenFile* userFile = currentThread->space->getPCB()->getFile(fileID);
-	//Now from openFileManger, find the SystemOpenFile data structure for this userFile.
-	int index = 0;
-	SysOpenFile* sysfile = openFileManager->getFile(userFile->fileTableIndex);	
-	//Use ReadAt() to read the file at selected offset to this system buffer buffer[]
-	sysfile->file->ReadAt(buffer, size, userFile->currentPosition);
-	// Adust the offset in userFile to reflect my current position.
-	// Implement me
-	userFile->currentPosition += size;
-        
+
+    	UserOpenFile* userFile = currentThread->space->getPCB()->getFile(fileID);
+    	//Now from openFileManger, find the SystemOpenFile data structure for this userFile.
+        if (userFile == NULL)
+            return 0;
+        SysOpenFile* sysfile = openFileManager->getFile(userFile->fileTableIndex);
+    	//Use ReadAt() to read the file at selected offset to this system buffer buffer[]
+    	numActualBytesRead = sysfile->file->ReadAt(buffer, size, userFile->currentPosition);
+    	// Adust the offset in userFile to reflect my current position.
+    	// Implement me
+    	userFile->currentPosition += numActualBytesRead;
+
     }
     //Now copy data from the system buffer to the targted main memory space using userReadWrite()
     //Implement me
-    userReadWrite(readAddr, buffer, size, USER_READ);
-    
-    
+    userReadWrite(readAddr, buffer, numActualBytesRead, USER_READ);
+
+
     delete [] buffer;
     return numActualBytesRead;
 }
@@ -613,12 +609,15 @@ void closeImpl() {
     // Find the data structure of this file openned in PCB.
     UserOpenFile* userFile = currentThread->space->getPCB()->getFile(fileID);
     // Use openFileManager to get a pointer to the system-wide open file data structure
-    int index = 0;
-    SysOpenFile* sysfile = openFileManager->getFile(userFile->filename, index);
-    // Close the file in the system-wide openfile data structure
-    sysfile->closedBySingleProcess();
-    // Close and removethe file  in the open file list of this process PCB.
-    currentThread->space->getPCB()->removeFile(fileID);
+    if (userFile == NULL)
+        return;
+    else {
+        SysOpenFile* sysfile = openFileManager->getFile(userFile->fileTableIndex);
+        // Close the file in the system-wide openfile data structure
+        sysfile->closedBySingleProcess();
+        // Close and removethe file  in the open file list of this process PCB.
+        currentThread->space->getPCB()->removeFile(fileID);
+    }
 }
 
 //----------------------------------------------------------------------
