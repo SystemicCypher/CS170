@@ -231,13 +231,11 @@ void yieldImpl() {
     //Now this process is resumed for exectuion after yielding.
     //Restore the corresponding user process's states (both registers and page table)
 
-    IntStatus oldLevel = interrupt->SetLevel(IntOff);
     currentThread->SaveUserState();
-    //currentThread->space->SaveState();
+    currentThread->space->SaveState();
     currentThread->Yield();
-    currentThread->RestoreUserState();
     currentThread->space->RestoreState();
-    (void) interrupt->SetLevel(oldLevel);
+    currentThread->RestoreUserState();
 }
 
 //----------------------------------------------------------------------
