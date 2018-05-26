@@ -264,7 +264,7 @@ void exitImpl() {
     bool flag = 0;
     for (int i = 0; i < MAX_PROCESSES; i++) {
         if (processManager->getStatus(i) != -1)
-            flag = 1
+            flag = 1;
     }
 
     (void) interrupt->SetLevel(oldLevel);
