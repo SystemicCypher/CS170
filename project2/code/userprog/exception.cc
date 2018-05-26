@@ -176,7 +176,7 @@ int forkImpl() {
     PCB* newPCB = new PCB(newPID, currentThread->space->getPCB()->getPID());
     // Make a copy of the address space as the child space, save its registers
     newPCB->status = P_RUNNING;
-    newPCB->process = childThread;
+    newPCB->thread = childThread;
 
     childThread->space = new AddrSpace(currentThread->space, newPCB); //Probably incorrect, right idea - wrong implementation
     childThread->space->SaveState();
