@@ -178,16 +178,17 @@ int forkImpl() {
     newPCB->status = P_RUNNING;
     newPCB->thread = childThread;
 
+    processManager->addProcess(newPCB, newPID);
+
     childThread->space = new AddrSpace(currentThread->space, newPCB); //Probably incorrect, right idea - wrong implementation
     childThread->space->SaveState();
     childThread->SaveUserState();
 
-    processManager->addProcess(newPCB, newPID);
 
     // Mandatory printout of the forked process
-    PCB* parentPCB = currentThread->space->getPCB();
-    PCB* childPCB = childThread->space->getPCB();
-    fprintf(stderr, "Process %d Fork: start at address 0x%x with %d pages memory\n", currentThread->space->getPCB()->getPID(), newProcessPC, childThread->space->getNumPages());
+    //PCB* parentPCB = currentThread->space->getPCB();
+    //PCB* childPCB = childThread->space->getPCB();
+    //fprintf(stderr, "Process %d Fork: start at address 0x%x with %d pages memory\n", currentThread->space->getPCB()->getPID(), newProcessPC, childThread->space->getNumPages());
 
     // Set up the function for the that new process will run and yield
     childThread->Fork(copyStateBack, newProcessPC);
@@ -276,8 +277,8 @@ int joinImpl() {
   //Change the process state in its PCB as P_BLOCKED
   currentThread->space->getPCB()->status = P_BLOCKED;
 
-  if(processManager->getStatus(otherPID) == -1)
-    return -1;
+  if(processManager->getStatus(otherPID) < 0)
+    return processManager->getStatus(otherPID);
 
   // Use proessManager to join otherPID
   processManager->join(otherPID);
