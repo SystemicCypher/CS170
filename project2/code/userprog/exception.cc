@@ -464,12 +464,17 @@ int userReadWrite(int virtAddr, char* buffer, int size, int type) {
     int numBytesFromPSLeft = 0;
     int numBytesCopied = 0;
     int numBytesToCopy = 0;
+    ExceptionType exception;
 
     if (type == USER_READ) { // Read and copy data from the system buffer to the user space in main memory
         while (size > 0) {
             //Translate the virtual address to phyiscal address physAddr
             //Implement me
-	  machine->Translate(virtAddr, &physAddr, size, false);
+            do {
+            exception = machine->Translate(virtAddr, &physAddr, size, false);
+            if(exception != NoException)
+                machine->RaiseException(exception, virtAddr);
+            } while (exception != NoException);
             numBytesFromPSLeft = PageSize - physAddr % PageSize;
             numBytesToCopy = (numBytesFromPSLeft < size) ? numBytesFromPSLeft : size;
             bcopy(buffer + numBytesCopied, machine->mainMemory + physAddr, numBytesToCopy);
@@ -482,7 +487,11 @@ int userReadWrite(int virtAddr, char* buffer, int size, int type) {
         while (size > 0) {
             //Translate the virtual address to phyiscal address physAddr
             //Implement me
-	  machine->Translate(virtAddr, &physAddr, size, false);
+            do {
+                exception = machine->Translate(virtAddr, &physAddr, size, false);
+                if(exception != NoException)
+                    machine->RaiseException(exception, virtAddr);
+            } while (exception != NoException);
             numBytesFromPSLeft = PageSize - physAddr % PageSize;
             numBytesToCopy = (numBytesFromPSLeft < size) ? numBytesFromPSLeft : size;
             bcopy(machine->mainMemory + physAddr, buffer + numBytesCopied, numBytesToCopy);
@@ -512,30 +521,12 @@ void writeImpl() {
     int i, userBufPhysAddr, bytesToEndOfPage, bytesToCopy, bytesCopied = 0;
 
     if (fileID == ConsoleOutput) {
-
-        // Copy bytes from user memory into kernel memory
-        while (bytesCopied < size) {
-
-            // Perform virtual to physical address translation
-            userBufPhysAddr = currentThread->space->Translate(writeAddr + bytesCopied);
-
-            // Determine how many bytes we can read from this page
-            bytesToEndOfPage = PageSize - userBufPhysAddr % PageSize;
-            if (size < bytesToEndOfPage)
-                bytesToCopy = size;
-            else
-                bytesToCopy = bytesToEndOfPage;
-
-            // Copy bytes into kernel buffer
-            memcpy(&buffer[bytesCopied], &machine->mainMemory[userBufPhysAddr], bytesToCopy);
-            bytesCopied += bytesToCopy;
-        }
-
-        // Write buffer to console (writes should be atomic)
+        userReadWrite(writeAddr, buffer, size, USER_WRITE);
+        buffer[size] = 0;
         openFileManager->consoleWriteLock->Acquire();
-        for (i = 0; i < size; ++i)
-	  UserConsolePutChar(buffer[i]);
-        openFileManager->consoleWriteLock->Release();
+        for (int i = 0; i < size; ++i)
+            UserConsolePutChar(buffer[i]);
+        openFileManager0->consoleWriteLock->Release();
     }
     else {
         //Fetch data from the user space to this system buffer using  userReadWrite().
@@ -548,10 +539,10 @@ void writeImpl() {
       else {
       SysOpenFile* sysfile = openFileManager->getFile(userFile->fileTableIndex);
       //Use writeAt() to write out the above buffer withe size listed..
-      int index = sysfile->file->WriteAt(buffer, size, userFile->currentPosition);
+      int numBytesWritten = sysfile->file->WriteAt(buffer, size, userFile->currentPosition);
       //Increment the current offset  by the actual number of bytes written.
       //Implement me
-      userFile->currentPosition += index;
+      userFile->currentPosition += numBytesWritten;
     }
   }
   delete [] buffer;
