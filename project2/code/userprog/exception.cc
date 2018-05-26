@@ -526,7 +526,7 @@ void writeImpl() {
         openFileManager->consoleWriteLock->Acquire();
         for (int i = 0; i < size; ++i)
             UserConsolePutChar(buffer[i]);
-        openFileManager0->consoleWriteLock->Release();
+        openFileManager->consoleWriteLock->Release();
     }
     else {
         //Fetch data from the user space to this system buffer using  userReadWrite().
