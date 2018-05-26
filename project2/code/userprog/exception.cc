@@ -338,7 +338,7 @@ SpaceId execImpl(char* filename) {
     // Close file and execute new process
     delete fileToExecute;
     fprintf(stderr, "Exec Program: %d loading %s\n", currPID, filename);
-    newThread->Fork(execHelper, NULL);
+    newThread->Fork(execHelper, 0);
     currentThread->Yield();
     return newPID;
 }
@@ -578,16 +578,16 @@ int readImpl() {
     }
     else {//Read data from the file to the system buffer
 
-	UserOpenFile* userFile = currentThread->space->getPCB()->getFile(fileID);
-	//Now from openFileManger, find the SystemOpenFile data structure for this userFile.
-    if (userFile == NULL)
-        return 0;
-    SysOpenFile* sysfile = openFileManager->getFile(userFile->fileTableIndex);
-	//Use ReadAt() to read the file at selected offset to this system buffer buffer[]
-	numActualBytesRead = sysfile->file->ReadAt(buffer, size, userFile->currentPosition);
-	// Adust the offset in userFile to reflect my current position.
-	// Implement me
-	userFile->currentPosition += numActualBytesRead;
+    	UserOpenFile* userFile = currentThread->space->getPCB()->getFile(fileID);
+    	//Now from openFileManger, find the SystemOpenFile data structure for this userFile.
+        if (userFile == NULL)
+            return 0;
+        SysOpenFile* sysfile = openFileManager->getFile(userFile->fileTableIndex);
+    	//Use ReadAt() to read the file at selected offset to this system buffer buffer[]
+    	numActualBytesRead = sysfile->file->ReadAt(buffer, size, userFile->currentPosition);
+    	// Adust the offset in userFile to reflect my current position.
+    	// Implement me
+    	userFile->currentPosition += numActualBytesRead;
 
     }
     //Now copy data from the system buffer to the targted main memory space using userReadWrite()
