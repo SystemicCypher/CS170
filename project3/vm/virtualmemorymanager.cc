@@ -38,7 +38,7 @@ int VirtualMemoryManager::allocSwapSector()
 SwapSectorInfo * VirtualMemoryManager::getSwapSectorInfo(int index)
 {
     return swapSpaceInfo + index;
-    
+
 }
 */
 void VirtualMemoryManager::writeToSwap(char *page, int pageSize,
@@ -54,25 +54,57 @@ void VirtualMemoryManager::swapPageIn(int virtAddr)
 {
 
         TranslationEntry* currPageEntry;
-        if(nextVictim>= NumPhysPages) {//no more space available
+        /*if(nextVictim>= NumPhysPages) {//no more space available
                 fprintf(stderr, "Fatal error: No more space available\n");
                 exit(1);
                 return;
+        }*/
+
+        FrameInfo* physPageInfo = physicalMemoryInfo + nextVictim;
+        //We assume this page is not occupied by any process space
+
+        while(physPageInfo->space != NULL && getPageTableEntry(physPageInfo)->use == true) {
+            getPageTableEntry(physPageInfo)->use = false;
+            nextVictim = (nextVictim + 1) % NumPhysPages;
+            physPageInfo = physicalMemoryInfo + nextVictim;
         }
 
-        FrameInfo * physPageInfo = physicalMemoryInfo + nextVictim;
-        //We assume this page is not occupied by any process space
-        physPageInfo->space = currentThread->space;
-        physPageInfo->pageTableIndex = virtAddr / PageSize;
-        currPageEntry = getPageTableEntry(physPageInfo);
-        currPageEntry->physicalPage = memoryManager->getPage();
-        loadPageToCurrVictim(virtAddr);
-        nextVictim = nextVictim + 1;
+        if(physPageInfo->space == NULL) {
+            *physPageInfo = FrameInfo();
+            physPageInfo->space = currentThread->space;
+            physPageInfo->pageTableIndex = virtAddr / PageSize;
+            currPageEntry = getPageTableEntry(physPageInfo);
+            currPageEntry->physicalPage = memoryManager->getPage();
+            loadPageToCurrVictim(virtAddr);
+        }
+        else {
+            TranslationEntry* oldPageEntry = getPageTableEntry(physPageInfo);
+            if(oldPageEntry->dirty == true) {
+                char* page = machine->mainMemory + oldPageEntry->physical * PageSize;
+                int location = physPageInfo->space->locationOnDisk[physPageInfo->pageTableIndex];
+                writeToSwap(page, PageSize, location);
+                oldPageEntry->dirty = false;
+            }
+            physPageInfo->space = currentThread->space;
+            physPageInfo->pageTableIndex = virtAddr / PageSize;
+            currPageEntry = getPageTableEntry(physPageInfo);
+            currPageEntry->physicalPage = oldPageEntry->physicalPage;
+            loadPageToCurrVictim(virtAddr);
+            oldPageEntry->valid = false;
+        }
+        nextVictim = (nextVictim + 1) % NumPhysPages;
+
+        //physPageInfo->space = currentThread->space;
+        //physPageInfo->pageTableIndex = virtAddr / PageSize;
+        //currPageEntry = getPageTableEntry(physPageInfo);
+        //currPageEntry->physicalPage = memoryManager->getPage();
+        //loadPageToCurrVictim(virtAddr);
+        //nextVictim = nextVictim + 1;
 }
 
 
 /*
- * Cleanup the physical memory allocated to a given address space after its 
+ * Cleanup the physical memory allocated to a given address space after its
  * destructor invokes.
 */
 void VirtualMemoryManager::releasePages(AddrSpace* space)
@@ -91,7 +123,7 @@ void VirtualMemoryManager::releasePages(AddrSpace* space)
             int currPID = space->getPCB()->getPID();
             DEBUG('v', "E %d: %d\n", currPID, currPage->virtualPage);
             memoryManager->clearPage(currPage->physicalPage);
-            physicalMemoryInfo[currPage->physicalPage].space = NULL; 
+            physicalMemoryInfo[currPage->physicalPage].space = NULL;
         }
         swapSectorMap->Clear((currPage->locationOnDisk) / PageSize);
     }
