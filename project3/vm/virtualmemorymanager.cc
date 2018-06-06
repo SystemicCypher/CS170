@@ -81,8 +81,8 @@ void VirtualMemoryManager::swapPageIn(int virtAddr)
             TranslationEntry* oldPageEntry = getPageTableEntry(physPageInfo);
             if(oldPageEntry->dirty == true) {
                 char* page = machine->mainMemory + oldPageEntry->physicalPage * PageSize;
-                int location = physPageInfo->space->locationsOnDisk[physPageInfo->pageTableIndex];
-                writeToSwap(page, PageSize, location);
+                int swapSpaceLoc = oldPageEntry->locationOnDisk;
+                writeToSwap(page, PageSize, swapSpaceLoc);
                 oldPageEntry->dirty = false;
             }
             physPageInfo->space = currentThread->space;
