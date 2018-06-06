@@ -80,7 +80,7 @@ void VirtualMemoryManager::swapPageIn(int virtAddr)
         else {
             TranslationEntry* oldPageEntry = getPageTableEntry(physPageInfo);
             if(oldPageEntry->dirty == true) {
-                char* page = machine->mainMemory + oldPageEntry->physical * PageSize;
+                char* page = machine->mainMemory + oldPageEntry->physicalPage * PageSize;
                 int location = physPageInfo->space->locationOnDisk[physPageInfo->pageTableIndex];
                 writeToSwap(page, PageSize, location);
                 oldPageEntry->dirty = false;
